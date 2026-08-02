@@ -1,14 +1,26 @@
 import logging
 import os
 from datetime import datetime
+from pathlib import Path
 
 from consts import WeekDay
 from dotenv import load_dotenv
 
 __logger = logging.getLogger(__name__)
 
-# load environment variables from .env file
-load_dotenv()
+#
+# Paths
+#
+# Root of the bot's own directory (the one holding src/), resolved from this
+# file rather than the working directory: the bot has to find its locales and
+# its database whether it is started as `python src/bot.py`, from inside src/,
+# or from /app in the container.
+BOT_ROOT = Path(__file__).resolve().parent.parent
+# Everything the bot writes lives here, next to the code — no named volumes.
+DATA_DIR = BOT_ROOT / "data"
+
+# .env is read from the bot's own directory, for the same reason.
+load_dotenv(BOT_ROOT / ".env")
 
 #
 # Required environment variables
@@ -23,8 +35,9 @@ AUTHORIZED_GROUP_ID = os.environ.get("AUTHORIZED_GROUP_ID")
 #
 # bot language
 BOT_LANGUAGE = os.environ.get("BOT_LANGUAGE", "ru")
-# database connection URI
-DB_URI = os.environ.get("DB_URI", "sqlite.db")
+# database connection URI; relative paths are resolved against DATA_DIR so the
+# database always ends up inside the bot's folder
+DB_URI = os.environ.get("DB_URI", "tickets.db")
 # maximum tickets per single user
 USER_OPEN_TICKETS_MAX = int(os.environ.get("USER_OPEN_TICKETS_MAX", "3"))
 # working time
@@ -55,6 +68,12 @@ if __null_req_vars:
         "Required environment variables are not set: %s", __null_req_vars
     )
     exit(1)
+
+DB_URI = Path(DB_URI)
+if not DB_URI.is_absolute():
+    DB_URI = DATA_DIR / DB_URI
+DB_URI.parent.mkdir(parents=True, exist_ok=True)
+DB_URI = str(DB_URI)
 
 BOT_TIME_ACTIVE = [
     datetime.strptime(time, "%H:%M").time()

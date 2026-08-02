@@ -1,0 +1,1 @@
+# Keeps the data directory in the tree; the SQLite files themselves are ignored.

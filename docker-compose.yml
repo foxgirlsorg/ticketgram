@@ -1,0 +1,9 @@
+services:
+  ticketgram:
+    build: .
+    container_name: audioranobe-support-bot
+    restart: unless-stopped
+    env_file:
+      - ./src/.env
+    volumes:
+      - ./data:/app/data
