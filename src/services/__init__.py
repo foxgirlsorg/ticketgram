@@ -1,1 +1,1 @@
-from . import bot, db, employee, ticket, user  # noqa
+from . import bot, db, employee, relay, ticket, user  # noqa

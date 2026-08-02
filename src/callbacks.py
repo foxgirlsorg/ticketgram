@@ -1,22 +1,13 @@
 import html
 import logging
 import traceback
-from datetime import datetime, timedelta
 
 import services
-from config import (
-    AUTHORIZED_GROUP_ID,
-    BOT_ACTIVE_DAYS,
-    BOT_TIME_ACTIVE,
-    BOT_TIME_ZONE,
-    USER_OPEN_TICKETS_MAX,
-)
+from config import AUTHORIZED_GROUP_ID
 from consts import (
     TICKETS_PER_PAGE,
-    ConversationState,
     PaginationActions,
     TicketActions,
-    TicketCreationActions,
     TicketStatus,
 )
 from i18n import gt as _
@@ -29,21 +20,49 @@ from telegram import (
     Update,
 )
 from telegram.error import BadRequest
-from telegram.ext import (
-    Application,
-    ApplicationHandlerStop,
-    ContextTypes,
-    ConversationHandler,
+from telegram.ext import Application, ApplicationHandlerStop, ContextTypes
+from templates import (
+    outside_hours_notice,
+    start_message,
+    ticket_response_message,
 )
-from templates import start_message, ticket_response_message
 from utils import (
     create_ticket_summary,
-    lang_code_to_emoji,
+    is_within_working_hours,
     parse_command_target,
-    week_day_localized,
+    ticket_tag,
 )
 
 __logger = logging.getLogger(__name__)
+
+# Shown in the open-tickets list when a ticket was opened with media only.
+MEDIA_ONLY_SUMMARY = "📎"
+
+
+def __ticket_buttons(ticket: SupportTicket) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    _("SPAM 🗑️"),
+                    callback_data=f"{ticket.id}_{TicketActions.SPAM}",
+                ),
+                InlineKeyboardButton(
+                    _("CLOSE ✅"),
+                    callback_data=f"{ticket.id}_{TicketActions.CLOSE}",
+                ),
+            ]
+        ]
+    )
+
+
+def __group_header(ticket: SupportTicket, user: User) -> str:
+    """Tagged one-liner that every relayed reader message sits under"""
+    name = html.escape(user.first_name or str(user.id))
+    return (
+        f"{ticket_tag(ticket)} | "
+        f"<a href='tg://user?id={user.id}'>{name}</a>"
+    )
 
 
 async def error_handler(
@@ -100,152 +119,147 @@ async def leave_chat(
 
 
 async def ticket(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Initializes the ticket creation conversation"""
+    """
+    Explains how to reach support.
+
+    Tickets are not created by a command any more — the reader's next message
+    opens one — so this only tells them what to do, and says so plainly when a
+    ticket is already running.
+    """
     message = update.effective_message
-    user = update.effective_user
+    db_user = User.get(User.id == update.effective_user.id)
 
-    db_user = User.get(User.id == user.id)
-
-    open_tickets = services.user.get_open_tickets(db_user)
-
-    if len(open_tickets) >= USER_OPEN_TICKETS_MAX:
+    open_ticket = services.ticket.get_open_ticket(db_user)
+    if open_ticket:
         await message.reply_text(
             _(
-                f"You have <code>{len(open_tickets)}</code> open tickets."
-                " Please, wait until they are resolved."
-            ),
+                "You already have an open ticket {tag} — just send your"
+                " message here and it will land in it."
+            ).format(tag=ticket_tag(open_ticket)),
             parse_mode="HTML",
         )
-        return ConversationHandler.END
+        return
 
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                _("Cancel ❌"), callback_data=TicketCreationActions.CANCEL
-            )
-        ]
-    ]
-
-    markup = InlineKeyboardMarkup(keyboard)
-
-    status_message = await message.reply_text(
-        _("Send your question and we'll do our best to assist you! 😉"),
-        reply_markup=markup,
+    await message.reply_text(
+        _("Send your question and we'll do our best to assist you! 😉")
     )
-    context.user_data["process_ticket_message_id"] = status_message.id
-
-    return ConversationState.WAITING_FOR_MESSAGE
 
 
-async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Stops the conversation"""
-    await update.effective_message.edit_text(
-        _("<i>❌ Ticket has been cancelled by user.</i>"), parse_mode="HTML"
-    )
-    return ConversationHandler.END
-
-
-async def process_user_ticket(
+async def process_user_message(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
-    """Creates a new ticket and forwards the user's message to the support group"""
+    """
+    Relays anything the reader sends into their open ticket.
+
+    The first message opens a ticket; every message after it joins the same
+    one until support closes it. Media, stickers and voice notes are copied
+    across as-is.
+    """
     bot = context.bot
-    user = update.effective_user
     message = update.effective_message
-    chat = update.effective_chat
-    ticket = SupportTicket(
-        user_id=user.id, message=message.text, private_message_id=message.id
+    db_user = User.get(User.id == update.effective_user.id)
+
+    open_ticket = services.ticket.get_open_ticket(db_user)
+    is_new = open_ticket is None
+
+    if is_new:
+        summary = message.text or message.caption or MEDIA_ONLY_SUMMARY
+        open_ticket = services.ticket.open_ticket(db_user, summary)
+
+    # If the reader is answering something support sent, point the relayed
+    # message at that staff message so the thread reads correctly in the group.
+    reply_to_support_id = None
+    if message.reply_to_message:
+        answered = services.ticket.by_private_message(
+            message.reply_to_message.message_id
+        )
+        if answered and answered.ticket.id == open_ticket.id:
+            reply_to_support_id = answered.support_message_id
+
+    group_message = await services.relay.to_support_group(
+        bot,
+        open_ticket,
+        __group_header(open_ticket, db_user),
+        message,
+        reply_to_message_id=reply_to_support_id,
+        # Only the opening message carries the action buttons — repeating them
+        # on every message would give the group a wall of them.
+        reply_markup=__ticket_buttons(open_ticket) if is_new else None,
     )
 
-    buttons = [
-        [
-            InlineKeyboardButton(
-                _("SPAM 🗑️"), callback_data=f"{ticket.id}_{TicketActions.SPAM}"
-            ),
-            InlineKeyboardButton(
-                _("CLOSE ✅"),
-                callback_data=f"{ticket.id}_{TicketActions.CLOSE}",
-            ),
-        ]
-    ]
-
-    reply_markup = InlineKeyboardMarkup(buttons)
-
-    group_message = await bot.send_message(
-        AUTHORIZED_GROUP_ID,
-        (
-            f"<a href='tg://user?id={user.id}'>{user.first_name}</a> | "
-            f"{lang_code_to_emoji(user.language_code)} | "
-            f"<code>{ticket.id}</code>\n\n{message.text}"
-        ),
-        parse_mode="HTML",
-        reply_markup=reply_markup,
-    )
-    # remove 'cancel' button
-    await bot.edit_message_reply_markup(
-        chat.id,
-        context.user_data["process_ticket_message_id"],
-        reply_markup=None,
+    services.ticket.record_message(
+        open_ticket,
+        support_message_id=group_message.message_id,
+        private_message_id=message.message_id,
+        from_staff=False,
     )
 
-    await message.reply_text(_("✅ Ticket has been successfully created"))
+    if is_new:
+        open_ticket.support_message_id = group_message.message_id
+        open_ticket.private_message_id = message.message_id
+        open_ticket.save()
 
-    ticket.support_message_id = group_message.id
-    ticket.save(force_insert=True)
+        confirmation = _(
+            "✅ Ticket {tag} has been created. Everything you send from now on"
+            " goes into it until support closes it."
+        ).format(tag=ticket_tag(open_ticket))
 
-    return ConversationHandler.END
+        if not is_within_working_hours():
+            confirmation = f"{confirmation}\n\n{outside_hours_notice}"
+
+        await message.reply_text(confirmation, parse_mode="HTML")
 
 
 async def ticket_response(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Forwards the staff reply to the client"""
+    """Forwards a staff reply to the reader, keeping the ticket open"""
     message = update.effective_message
     user = update.effective_user
     reply_message = message.reply_to_message
-    reply_user = reply_message.from_user
     bot = context.bot
-    # check if reply mentions the bot
-    if reply_user.id != context.bot.id:
+
+    # only replies to the bot's own relayed messages are answers to a ticket
+    if reply_message.from_user.id != bot.id:
         return
 
-    try:
-        ticket = SupportTicket.get(
-            SupportTicket.support_message_id == reply_message.id
-        )
-    except DoesNotExist:
+    relayed = services.ticket.by_support_message(reply_message.message_id)
+    if relayed is None:
         __logger.debug(
             "Reply message with id '%s' is not associated with a support ticket",
-            reply_message.id,
+            reply_message.message_id,
         )
         return
 
-    if ticket.status == TicketStatus.CLOSED:
-        __logger.debug(
-            "SupportTicket with id '%s' is closed", SupportTicket.id
+    support_ticket = relayed.ticket
+
+    if support_ticket.status == TicketStatus.CLOSED:
+        await message.reply_text(
+            _("⚠️ This ticket is closed — the reader will not see the reply.")
         )
         return
-
-    db_user = User.get(User.id == user.id)
 
     try:
         pseudonym = Employee.get(Employee.user_id == user.id).pseudonym
     except DoesNotExist:
         __logger.debug("Fallback pseudonym to default value")
         pseudonym = _("Support Staff")
-    # send response
-    await bot.send_message(
-        ticket.user.id,
-        ticket_response_message.format(
-            client_name=ticket.user.first_name,
-            staff_response=message.text_html,
-            staff_pseudonym=pseudonym,
-        ),  # TODO
-        parse_mode="HTML",
-        reply_to_message_id=ticket.private_message_id,
+
+    header = ticket_response_message.format(
+        staff_pseudonym=html.escape(pseudonym or _("Support Staff"))
     )
-    # mark as resolved
-    services.ticket.close_ticket(ticket, db_user)
-    await bot.edit_message_reply_markup(
-        AUTHORIZED_GROUP_ID, ticket.support_message_id, reply_markup=None
+
+    delivered = await services.relay.copy_with_header(
+        bot,
+        support_ticket.user.id,
+        header,
+        message,
+        reply_to_message_id=relayed.private_message_id,
+    )
+
+    services.ticket.record_message(
+        support_ticket,
+        support_message_id=message.message_id,
+        private_message_id=delivered.message_id,
+        from_staff=True,
     )
 
 
@@ -262,42 +276,48 @@ async def ticket_actions(update: Update, context: ContextTypes.DEFAULT_TYPE):
     raw_ticket_id, action = query.data.split("_", 1)
 
     try:
-        ticket = SupportTicket.get_by_id(raw_ticket_id)
+        support_ticket = SupportTicket.get_by_id(raw_ticket_id)
     except DoesNotExist:
         return
 
+    tag = ticket_tag(support_ticket)
     edit_header = (
-        f"{message.text_html}\n\n"
-        f"<a href='tg://user?id={query_user.id}'>{query_user.first_name}</a> "
+        f"{message.text_html or message.caption_html or tag}\n\n"
+        f"<a href='tg://user?id={query_user.id}'>"
+        f"{html.escape(query_user.first_name or '')}</a> "
     )
 
     if action == TicketActions.SPAM:
         reason = _("Spam")
+        reader = support_ticket.user
 
-        services.user.ban(ticket.user, reason)
+        services.user.ban(reader, reason)
 
         edit_body = _(
             "🛑 <b>has issued a ban</b>, <i>reason: {reason}</i>"
         ).format(reason=reason)
-        # notify the user about action
+        # notify the reader about the action
         await bot.send_message(
-            ticket.user.id,
+            reader.id,
             _("<b>System</b> {body}").format(body=edit_body),
             parse_mode="HTML",
         )
-        # get all open tickets created by user
+        # wipe the banned reader's open tickets out of the group
         deleted_count = 0
-        for ticket in SupportTicket.select().where(
-            (
-                (SupportTicket.user_id == ticket.user_id)
-                & (SupportTicket.status == TicketStatus.OPEN)
-            )
+        for spam_ticket in SupportTicket.select().where(
+            (SupportTicket.user == reader)
+            & (SupportTicket.status == TicketStatus.OPEN)
         ):
-            ticket.delete_instance()
-            await bot.delete_message(
-                chat_id=AUTHORIZED_GROUP_ID,
-                message_id=ticket.support_message_id,
-            )
+            for relayed in spam_ticket.messages:
+                try:
+                    await bot.delete_message(
+                        chat_id=AUTHORIZED_GROUP_ID,
+                        message_id=relayed.support_message_id,
+                    )
+                except BadRequest as e:
+                    __logger.debug("Could not delete relayed message: %s", e)
+                relayed.delete_instance()
+            spam_ticket.delete_instance()
             deleted_count += 1
 
         # notify the staff about the action
@@ -310,14 +330,26 @@ async def ticket_actions(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=None,
         )
     elif action == TicketActions.CLOSE:
-        services.ticket.close_ticket(ticket, query_user)
+        db_user = User.get(User.id == query_user.id)
+        services.ticket.close_ticket(support_ticket, db_user)
 
-        await message.edit_text(
-            _("{header}✅ <b>marked this ticket as resolved</b>").format(
+        await message.edit_reply_markup(reply_markup=None)
+        await bot.send_message(
+            chat_id=AUTHORIZED_GROUP_ID,
+            text=_("{header}✅ <b>marked this ticket as resolved</b>").format(
                 header=edit_header
             ),
             parse_mode="HTML",
-            reply_markup=None,
+        )
+        # the reader has to know the thread is over: their next message opens
+        # a brand new ticket rather than continuing this one
+        await bot.send_message(
+            support_ticket.user.id,
+            _(
+                "ℹ️ Your ticket {tag} has been closed. Write again if you need"
+                " anything else — that will open a new one."
+            ).format(tag=tag),
+            parse_mode="HTML",
         )
     else:
         return
@@ -331,7 +363,7 @@ async def preprocess_update(
     """Called before every update"""
     user = update.effective_user
 
-    if user.is_bot:
+    if user is None or user.is_bot:
         return
 
     try:
@@ -351,24 +383,7 @@ async def preprocess_update(
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Shows welcome message"""
-    work_time = [time.strftime("%H:%M") for time in BOT_TIME_ACTIVE]
-    work_days = [week_day_localized(day) for day in BOT_ACTIVE_DAYS]
-    work_days_str = ", ".join(work_days)
-    local_time = (datetime.utcnow() + timedelta(hours=BOT_TIME_ZONE)).strftime(
-        "%H:%M"
-    )
-    tz_sign = "+" if BOT_TIME_ZONE >= 0 else "-"
-
-    await update.message.reply_text(
-        start_message.format(
-            local_time=local_time,
-            time_zone=tz_sign + str(BOT_TIME_ZONE),
-            work_start=work_time[0],
-            work_end=work_time[1],
-            work_calendar=work_days_str,
-        ),
-        parse_mode="HTML",
-    )
+    await update.message.reply_text(start_message, parse_mode="HTML")
 
 
 async def ban_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -498,17 +513,17 @@ async def open_tickets(update: Update, context: ContextTypes.DEFAULT_TYPE):
     limit = TICKETS_PER_PAGE
     offset = TICKETS_PER_PAGE * page
 
-    open_tickets = (
+    tickets = (
         SupportTicket.select()
         .where(SupportTicket.status == TicketStatus.OPEN)
         .order_by(SupportTicket.created_at)
         .offset(offset)
         .limit(limit)
     )
-    if not open_tickets:
+    if not tickets:
         summary = _("🥳 Hooray, all tickets are resolved!")
     else:
-        summary = create_ticket_summary(open_tickets)
+        summary = create_ticket_summary(tickets)
 
     keyboard = [
         [

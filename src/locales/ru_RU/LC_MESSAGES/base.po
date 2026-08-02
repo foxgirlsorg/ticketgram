@@ -1,7 +1,5 @@
-# Translations template for PROJECT.
-# Copyright (C) 2023 ORGANIZATION
-# This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
+# Russian translation for the AudioRanobe support bot.
+# Based on the ticketgram catalog by mikurei, 2023.
 #
 msgid ""
 msgstr ""
@@ -18,69 +16,149 @@ msgstr ""
 "Generated-By: Babel 2.12.1\n"
 "X-Generator: Poedit 3.3.1\n"
 
-#: src/callbacks.py:63
-msgid ""
-"⚠️ Unexpected Error has occurred:\n"
-"\n"
-"<pre>context.bot_data = {}</pre>\n"
-"<pre>context.chat_data = {}</pre>\n"
-"<pre>context.user_data = {}</pre>\n"
-"\n"
-"<pre>{}</pre>\n"
-msgstr ""
-"⚠️ Произошла непредвиденная ошибка:\n"
-"\n"
-"<pre>context.bot_data = {}</pre>\n"
-"<pre>context.chat_data = {}</pre>\n"
-"<pre>context.user_data = {}</pre>\n"
-"\n"
-"<pre>{}</pre>\n"
+msgid "<b>(page {}/{})</b>"
+msgstr "<b>(стр. {}/{})</b>"
 
-#: src/callbacks.py:111
-msgid " Please, wait until they are resolved."
-msgstr " Пожалуйста, дождитесь ответа."
-
-#: src/callbacks.py:122
-msgid "Cancel ❌"
-msgstr "Отменить ❌"
-
-#: src/callbacks.py:130
-msgid "Send your question and we'll do our best to assist you! 😉"
-msgstr "Напишите в чем проблема и мы постараемся Вам помочь! 😉"
-
-#: src/callbacks.py:141
-msgid "<i>❌ Ticket has been cancelled by user.</i>"
-msgstr "<i>❌ Обращение отменено пользователем.</i>"
-
-#: src/callbacks.py:161
-msgid "SPAM 🗑️"
-msgstr "СПАМ 🗑️"
-
-#: src/callbacks.py:164
-msgid "CLOSE ✅"
-msgstr "РЕШЕНО ✅"
-
-#: src/callbacks.py:189
-msgid "✅ Ticket has been successfully created"
-msgstr "✅ Обращение успешно создано"
-
-#: src/callbacks.py:222
-msgid "Support Staff"
-msgstr "Команда Поддержки"
-
-#: src/callbacks.py:264
-msgid "Spam"
-msgstr "Спам"
-
-#: src/callbacks.py:268
-msgid "🛑 <b>has issued a ban</b>, <i>reason: {reason}</i>"
-msgstr "🛑 <b>выдал(а) блокировку</b>, <i>причина: {reason}</i>"
-
-#: src/callbacks.py:274
 msgid "<b>System</b> {body}"
 msgstr "<b>Система</b> {body}"
 
-#: src/callbacks.py:295
+msgid "<b>ℹ️ AudioRanobe support</b> · {staff_pseudonym}"
+msgstr "<b>ℹ️ Поддержка AudioRanobe</b> · {staff_pseudonym}"
+
+msgid "<i>Nothing to show</i>"
+msgstr "<i>Нечего отображать</i>"
+
+msgid "Ban the user"
+msgstr "Заблокировать пользователя"
+
+msgid "CLOSE ✅"
+msgstr "РЕШЕНО ✅"
+
+msgid "Create a new support ticket"
+msgstr "Создать новое обращение"
+
+msgid ""
+"Hi! This is the AudioRanobe support bot. Broken audio, a wrong "
+"chapter, a takedown request or a question about your account — just "
+"describe it here, attach screenshots or a recording if that helps, "
+"and the team will answer right in this chat.\n"
+"\n"
+"You can write at any hour. If we are out of office at that moment, "
+"support will get to your ticket once they are back."
+msgstr ""
+"Привет! Это бот поддержки AudioRanobe. Не воспроизводится озвучка, "
+"перепутана глава, жалоба правообладателя или вопрос по аккаунту — "
+"просто опишите проблему здесь, приложите скриншоты или запись, если "
+"это поможет, — и команда ответит прямо в этом чате.\n"
+"\n"
+"Писать можно в любое время. Если в этот момент мы не на месте, "
+"поддержка вернётся к вашему обращению, как только сможет."
+
+msgid ""
+"Hi! This is the AudioRanobe support bot. Just describe it here, "
+"attach screenshots or a recording if that helps, and the team will "
+"answer right in this chat.\n"
+"\n"
+"You can write at any hour. If we are out of office at that moment, "
+"support will get to your ticket once they are back."
+msgstr ""
+"Привет! Это бот поддержки AudioRanobe. Просто опишите проблему "
+"здесь, приложите скриншоты или запись, если это поможет, — и команда"
+" ответит прямо в этом чате.\n"
+"\n"
+"Писать можно в любое время. Если в этот момент мы не на месте, "
+"поддержка вернётся к вашему обращению, как только сможет."
+
+msgid "List of open tickets"
+msgstr "Список открытых обращений"
+
+msgid "SPAM 🗑️"
+msgstr "СПАМ 🗑️"
+
+msgid "Send your question and we'll do our best to assist you! 😉"
+msgstr ""
+"Опишите проблему — если она про конкретный тайтл или главу, "
+"приложите ссылку. Мы постараемся помочь! 😉"
+
+msgid "Spam"
+msgstr "Спам"
+
+msgid "Start command"
+msgstr "Команда запуска"
+
+msgid "Support Staff"
+msgstr "Поддержка AudioRanobe"
+
+msgid "Unban the user"
+msgstr "Разблокировать пользователя"
+
+msgid "Update your pseudonym"
+msgstr "Поменять Ваш псевдоним"
+
+msgid ""
+"You already have an open ticket {tag} — just send your message here "
+"and it will land in it."
+msgstr ""
+"У вас уже открыто обращение {tag} — просто напишите сюда, сообщение "
+"попадёт в него."
+
+msgid "day"
+msgstr "день"
+
+msgid "days"
+msgstr "дней"
+
+msgid "friday"
+msgstr "пятница"
+
+msgid "hour"
+msgstr "час"
+
+msgid "hours"
+msgstr "часов"
+
+msgid "just now"
+msgstr "совсем недавно"
+
+msgid "long time ago"
+msgstr "давным-давно"
+
+msgid "minute"
+msgstr "минута"
+
+msgid "minutes"
+msgstr "минут"
+
+msgid "monday"
+msgstr "понедельник"
+
+msgid "month"
+msgstr "месяц"
+
+msgid "months"
+msgstr "месяцев"
+
+msgid "saturday"
+msgstr "суббота"
+
+msgid "second"
+msgstr "секунда"
+
+msgid "seconds"
+msgstr "секунд"
+
+msgid "sunday"
+msgstr "воскресенье"
+
+msgid "thursday"
+msgstr "четверг"
+
+msgid "tuesday"
+msgstr "вторник"
+
+msgid "wednesday"
+msgstr "среда"
+
 msgid ""
 "{header}{body}\n"
 "\n"
@@ -90,52 +168,97 @@ msgstr ""
 "\n"
 "<i>Удалено {count} открытых обращений</i>"
 
-#: src/callbacks.py:305
 msgid "{header}✅ <b>marked this ticket as resolved</b>"
 msgstr "{header}✅ <b>пометил(а) обращение как решеное</b>"
 
-#: src/callbacks.py:369
-msgid "ℹ️ Usage: {} <ticket_id OR username OR user_id> <reason>"
-msgstr ""
-"ℹ️ Подсказка: {} <id_обращения ИЛИ юзернейм ИЛИ id_пользователя> <причина>"
-
-#: src/callbacks.py:388
-msgid "⚠️ User is already banned"
-msgstr "⚠️ Пользователь уже заблокирован"
-
-#: src/callbacks.py:391
-msgid "✅ User has been banned"
-msgstr "✅ Пользователь заблокирован"
-
-#: src/callbacks.py:400
-msgid "ℹ️ Usage: {} <ticket_id OR username OR user_id>"
-msgstr "ℹ️ Подсказка: {} <id_обращения ИЛИ юзернейм ИЛИ id_пользователя>"
-
-#: src/callbacks.py:415
-msgid "✅ User has been unbanned"
-msgstr "✅ Пользователь разблокирован"
-
-#: src/callbacks.py:417
-msgid "⚠️ User is not banned"
-msgstr "⚠️ Пользователь не заблокирован"
-
-#: src/callbacks.py:428
 msgid "ℹ️ Usage: {} <pseudonym>"
 msgstr "ℹ️ Подсказка: {} <псевдоним>"
 
-#: src/callbacks.py:440
+msgid "ℹ️ Usage: {} <ticket_id OR username OR user_id>"
+msgstr ""
+"ℹ️ Подсказка: {} <id_обращения ИЛИ юзернейм ИЛИ id_пользователя>"
+
+msgid "ℹ️ Usage: {} <ticket_id OR username OR user_id> <reason>"
+msgstr ""
+"ℹ️ Подсказка: {} <id_обращения ИЛИ юзернейм ИЛИ id_пользователя> "
+"<причина>"
+
+msgid ""
+"ℹ️ Your ticket {tag} has been closed. Write again if you need "
+"anything else — that will open a new one."
+msgstr ""
+"ℹ️ Ваше обращение {tag} закрыто. Напишите снова, если нужна помощь —"
+" откроется новое обращение."
+
+msgid "⚠️ Target must be a valid ticket id OR @username OR user id"
+msgstr ""
+"⚠️ Цель должна быть правильным идентификатором обращения ИЛИ "
+"@юзернеймом ИЛИ идентификатором пользователя"
+
+msgid ""
+"⚠️ This ticket is closed — the reader will not see the reply."
+msgstr "⚠️ Обращение закрыто — пользователь не увидит этот ответ."
+
+msgid "⚠️ Ticket with this id doesn't exist in the database"
+msgstr ""
+"⚠️ Обращение с указанным идентификатором не существует в базе данных"
+
+msgid ""
+"⚠️ Unexpected Error has occurred:\n"
+"\n"
+"<pre>context.bot_data = {}</pre>\n"
+"<pre>context.chat_data = {}</pre>\n"
+"<pre>context.user_data = {}</pre>\n"
+"\n"
+"<pre>{}</pre>\n"
+""
+msgstr ""
+"⚠️ Произошла непредвиденная ошибка:\n"
+"\n"
+"<pre>context.bot_data = {}</pre>\n"
+"<pre>context.chat_data = {}</pre>\n"
+"<pre>context.user_data = {}</pre>\n"
+"\n"
+"<pre>{}</pre>\n"
+""
+
+msgid "⚠️ User is already banned"
+msgstr "⚠️ Пользователь уже заблокирован"
+
+msgid "⚠️ User is not banned"
+msgstr "⚠️ Пользователь не заблокирован"
+
+msgid "⚠️ User with this @username doesn't exist in the database"
+msgstr ""
+"⚠️ Пользователь с указанным @юзернеймом не существует в базе данных"
+
+msgid "⚠️ User with this id doesn't exist in the database"
+msgstr ""
+"⚠️ Пользователь с указанным идентификатором не существует в базе "
+"данных"
+
 msgid "✅ Pseudonym has been set to '{}'"
 msgstr "✅ Псевдоним установлен как '{}'"
 
-#: src/callbacks.py:498
-msgid "🥳 Hooray, all tickets are resolved!"
-msgstr "🥳 Ура, все обращения закрыты!"
+msgid ""
+"✅ Ticket {tag} has been created. Everything you send from now on "
+"goes into it until support closes it."
+msgstr ""
+"✅ Обращение {tag} создано. Всё, что вы напишете дальше, попадёт в "
+"него, пока поддержка его не закроет."
 
-#: src/callbacks.py:518
-msgid "<b>(page {}/{})</b>"
-msgstr "<b>(стр. {}/{})</b>"
+msgid "✅ User has been banned"
+msgstr "✅ Пользователь заблокирован"
 
-#: src/callbacks.py:523
+msgid "✅ User has been unbanned"
+msgstr "✅ Пользователь разблокирован"
+
+msgid ""
+"🌙 Right now it is outside our working hours — support will get back "
+"to you once they are in."
+msgstr ""
+"🌙 Сейчас нерабочее время — поддержка ответит, как только вернётся."
+
 msgid ""
 "📂 Open tickets {}\n"
 "{}"
@@ -143,160 +266,8 @@ msgstr ""
 "📂 Открытые обращения {}\n"
 "{}"
 
-#: src/templates.py:3
-msgid ""
-"<b>ℹ️ Support response:</b>\n"
-"\n"
-"Hi, {client_name}!\n"
-"\n"
-"{staff_response}\n"
-"\n"
-"Kind regards,\n"
-"{staff_pseudonym}"
-msgstr ""
-"<b>ℹ️ Ответ поддержки:</b>\n"
-"\n"
-"Здравствуйте, {client_name}!\n"
-"\n"
-"{staff_response}\n"
-"\n"
-"С уважением,\n"
-"{staff_pseudonym}"
+msgid "🛑 <b>has issued a ban</b>, <i>reason: {reason}</i>"
+msgstr "🛑 <b>выдал(а) блокировку</b>, <i>причина: {reason}</i>"
 
-#: src/templates.py:11
-msgid ""
-"Hi! I'm a bot that manages the support system. If you need assistance with "
-"anything, feel free to contact us using the `/ticket` command!\n"
-"\n"
-"Local time is <code>{local_time} (UTC{time_zone})</code>\n"
-"Work time is <code>{work_start} - {work_end}</code>\n"
-"Work days are <code>{work_calendar}</code>"
-msgstr ""
-"Привет! Я бот управляющий системой поддержки. Если Вам нужна помощь с чем-то, "
-"воспользуйтесь командой `/ticket` для связи с нами!\n"
-"\n"
-"Местное время <code>{local_time} (UTC{time_zone})</code>\n"
-"Рабочее время <code>{work_start} - {work_end}</code>\n"
-"Рабочие дни <code>{work_calendar}</code>"
-
-#: src/utils.py:51
-msgid "⚠️ Ticket with this id doesn't exist in the database"
-msgstr "⚠️ Обращение с указанным идентификатором не существует в базе данных"
-
-#: src/utils.py:59
-msgid "⚠️ User with this @username doesn't exist in the database"
-msgstr "⚠️ Пользователь с указанным @юзернеймом не существует в базе данных"
-
-#: src/utils.py:67
-msgid "⚠️ User with this id doesn't exist in the database"
-msgstr "⚠️ Пользователь с указанным идентификатором не существует в базе данных"
-
-#: src/utils.py:72
-msgid "⚠️ Target must be a valid ticket id OR @username OR user id"
-msgstr ""
-"⚠️ Цель должна быть правильным идентификатором обращения ИЛИ @юзернеймом ИЛИ "
-"идентификатором пользователя"
-
-#: src/utils.py:109
-msgid "month"
-msgstr "месяц"
-
-#: src/utils.py:109
-msgid "months"
-msgstr "месяцев"
-
-#: src/utils.py:110
-msgid "day"
-msgstr "день"
-
-#: src/utils.py:110
-msgid "days"
-msgstr "дней"
-
-#: src/utils.py:111
-msgid "hour"
-msgstr "час"
-
-#: src/utils.py:111
-msgid "hours"
-msgstr "часов"
-
-#: src/utils.py:112
-msgid "minute"
-msgstr "минута"
-
-#: src/utils.py:112
-msgid "minutes"
-msgstr "минут"
-
-#: src/utils.py:113
-msgid "second"
-msgstr "секунда"
-
-#: src/utils.py:113
-msgid "seconds"
-msgstr "секунд"
-
-#: src/utils.py:119
-msgid "long time ago"
-msgstr "давным-давно"
-
-#: src/utils.py:122
-msgid "just now"
-msgstr "совсем недавно"
-
-#: src/utils.py:178
-msgid "<i>Nothing to show</i>"
-msgstr "<i>Нечего отображать</i>"
-
-#: src/utils.py:185
-msgid "monday"
-msgstr "понедельник"
-
-#: src/utils.py:186
-msgid "tuesday"
-msgstr "вторник"
-
-#: src/utils.py:187
-msgid "wednesday"
-msgstr "среда"
-
-#: src/utils.py:188
-msgid "thursday"
-msgstr "четверг"
-
-#: src/utils.py:189
-msgid "friday"
-msgstr "пятница"
-
-#: src/utils.py:190
-msgid "saturday"
-msgstr "суббота"
-
-#: src/utils.py:191
-msgid "sunday"
-msgstr "воскресенье"
-
-#: src/services/bot.py:24
-msgid "Start command"
-msgstr "Команда запуска"
-
-#: src/services/bot.py:25
-msgid "Create a new support ticket"
-msgstr "Создать новое обращение"
-
-#: src/services/bot.py:32
-msgid "List of open tickets"
-msgstr "Список открытых обращений"
-
-#: src/services/bot.py:33
-msgid "Update your pseudonym"
-msgstr "Поменять Ваш псевдоним"
-
-#: src/services/bot.py:34
-msgid "Ban the user"
-msgstr "Заблокировать пользователя"
-
-#: src/services/bot.py:35
-msgid "Unban the user"
-msgstr "Разблокировать пользователя"
+msgid "🥳 Hooray, all tickets are resolved!"
+msgstr "🥳 Ура, все обращения закрыты!"

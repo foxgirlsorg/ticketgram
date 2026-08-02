@@ -1,23 +1,161 @@
-# Translations template for PROJECT.
-# Copyright (C) 2023 ORGANIZATION
-# This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
+# Translation template for the AudioRanobe support bot.
+# Based on the ticketgram catalog by mikurei, 2023.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PROJECT VERSION\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-06-11 17:23+0300\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.12.1\n"
 
-#: src/callbacks.py:63
+msgid "<b>(page {}/{})</b>"
+msgstr ""
+
+msgid "<b>System</b> {body}"
+msgstr ""
+
+msgid "<b>ℹ️ AudioRanobe support</b> · {staff_pseudonym}"
+msgstr ""
+
+msgid "<i>Nothing to show</i>"
+msgstr ""
+
+msgid "Ban the user"
+msgstr ""
+
+msgid "CLOSE ✅"
+msgstr ""
+
+msgid "Create a new support ticket"
+msgstr ""
+
+msgid ""
+"Hi! This is the AudioRanobe support bot. Just describe it here, "
+"attach screenshots or a recording if that helps, and the team will "
+"answer right in this chat.\n"
+"\n"
+"You can write at any hour. If we are out of office at that moment, "
+"support will get to your ticket once they are back."
+msgstr ""
+
+msgid "List of open tickets"
+msgstr ""
+
+msgid "SPAM 🗑️"
+msgstr ""
+
+msgid "Send your question and we'll do our best to assist you! 😉"
+msgstr ""
+
+msgid "Spam"
+msgstr ""
+
+msgid "Start command"
+msgstr ""
+
+msgid "Support Staff"
+msgstr ""
+
+msgid "Unban the user"
+msgstr ""
+
+msgid "Update your pseudonym"
+msgstr ""
+
+msgid ""
+"You already have an open ticket {tag} — just send your message here "
+"and it will land in it."
+msgstr ""
+
+msgid "day"
+msgstr ""
+
+msgid "days"
+msgstr ""
+
+msgid "friday"
+msgstr ""
+
+msgid "hour"
+msgstr ""
+
+msgid "hours"
+msgstr ""
+
+msgid "just now"
+msgstr ""
+
+msgid "long time ago"
+msgstr ""
+
+msgid "minute"
+msgstr ""
+
+msgid "minutes"
+msgstr ""
+
+msgid "monday"
+msgstr ""
+
+msgid "month"
+msgstr ""
+
+msgid "months"
+msgstr ""
+
+msgid "saturday"
+msgstr ""
+
+msgid "second"
+msgstr ""
+
+msgid "seconds"
+msgstr ""
+
+msgid "sunday"
+msgstr ""
+
+msgid "thursday"
+msgstr ""
+
+msgid "tuesday"
+msgstr ""
+
+msgid "wednesday"
+msgstr ""
+
+msgid ""
+"{header}{body}\n"
+"\n"
+"<i>Deleted {count} open tickets</i>"
+msgstr ""
+
+msgid "{header}✅ <b>marked this ticket as resolved</b>"
+msgstr ""
+
+msgid "ℹ️ Usage: {} <pseudonym>"
+msgstr ""
+
+msgid "ℹ️ Usage: {} <ticket_id OR username OR user_id>"
+msgstr ""
+
+msgid "ℹ️ Usage: {} <ticket_id OR username OR user_id> <reason>"
+msgstr ""
+
+msgid ""
+"ℹ️ Your ticket {tag} has been closed. Write again if you need "
+"anything else — that will open a new one."
+msgstr ""
+
+msgid "⚠️ Target must be a valid ticket id OR @username OR user id"
+msgstr ""
+
+msgid ""
+"⚠️ This ticket is closed — the reader will not see the reply."
+msgstr ""
+
+msgid "⚠️ Ticket with this id doesn't exist in the database"
+msgstr ""
+
 msgid ""
 "⚠️ Unexpected Error has occurred:\n"
 "\n"
@@ -26,248 +164,47 @@ msgid ""
 "<pre>context.user_data = {}</pre>\n"
 "\n"
 "<pre>{}</pre>\n"
+""
 msgstr ""
 
-#: src/callbacks.py:111
-msgid " Please, wait until they are resolved."
-msgstr ""
-
-#: src/callbacks.py:122
-msgid "Cancel ❌"
-msgstr ""
-
-#: src/callbacks.py:130
-msgid "Send your question and we'll do our best to assist you! 😉"
-msgstr ""
-
-#: src/callbacks.py:141
-msgid "<i>❌ Ticket has been cancelled by user.</i>"
-msgstr ""
-
-#: src/callbacks.py:161
-msgid "SPAM 🗑️"
-msgstr ""
-
-#: src/callbacks.py:164
-msgid "CLOSE ✅"
-msgstr ""
-
-#: src/callbacks.py:189
-msgid "✅ Ticket has been successfully created"
-msgstr ""
-
-#: src/callbacks.py:222
-msgid "Support Staff"
-msgstr ""
-
-#: src/callbacks.py:264
-msgid "Spam"
-msgstr ""
-
-#: src/callbacks.py:268
-msgid "🛑 <b>has issued a ban</b>, <i>reason: {reason}</i>"
-msgstr ""
-
-#: src/callbacks.py:274
-msgid "<b>System</b> {body}"
-msgstr ""
-
-#: src/callbacks.py:295
-msgid ""
-"{header}{body}\n"
-"\n"
-"<i>Deleted {count} open tickets</i>"
-msgstr ""
-
-#: src/callbacks.py:305
-msgid "{header}✅ <b>marked this ticket as resolved</b>"
-msgstr ""
-
-#: src/callbacks.py:369
-msgid "ℹ️ Usage: {} <ticket_id OR username OR user_id> <reason>"
-msgstr ""
-
-#: src/callbacks.py:388
 msgid "⚠️ User is already banned"
 msgstr ""
 
-#: src/callbacks.py:391
-msgid "✅ User has been banned"
-msgstr ""
-
-#: src/callbacks.py:400
-msgid "ℹ️ Usage: {} <ticket_id OR username OR user_id>"
-msgstr ""
-
-#: src/callbacks.py:415
-msgid "✅ User has been unbanned"
-msgstr ""
-
-#: src/callbacks.py:417
 msgid "⚠️ User is not banned"
 msgstr ""
 
-#: src/callbacks.py:428
-msgid "ℹ️ Usage: {} <pseudonym>"
+msgid "⚠️ User with this @username doesn't exist in the database"
 msgstr ""
 
-#: src/callbacks.py:440
+msgid "⚠️ User with this id doesn't exist in the database"
+msgstr ""
+
 msgid "✅ Pseudonym has been set to '{}'"
 msgstr ""
 
-#: src/callbacks.py:498
-msgid "🥳 Hooray, all tickets are resolved!"
+msgid ""
+"✅ Ticket {tag} has been created. Everything you send from now on "
+"goes into it until support closes it."
 msgstr ""
 
-#: src/callbacks.py:518
-msgid "<b>(page {}/{})</b>"
+msgid "✅ User has been banned"
 msgstr ""
 
-#: src/callbacks.py:523
+msgid "✅ User has been unbanned"
+msgstr ""
+
+msgid ""
+"🌙 Right now it is outside our working hours — support will get back "
+"to you once they are in."
+msgstr ""
+
 msgid ""
 "📂 Open tickets {}\n"
 "{}"
 msgstr ""
 
-#: src/templates.py:3
-msgid ""
-"<b>ℹ️ Support response:</b>\n"
-"\n"
-"Hi, {client_name}!\n"
-"\n"
-"{staff_response}\n"
-"\n"
-"Kind regards,\n"
-"{staff_pseudonym}"
+msgid "🛑 <b>has issued a ban</b>, <i>reason: {reason}</i>"
 msgstr ""
 
-#: src/templates.py:11
-msgid ""
-"Hi! I'm a bot that manages the support system. If you need assistance "
-"with anything, feel free to contact us using the `/ticket` command!\n"
-"\n"
-"Local time is <code>{local_time} (UTC{time_zone})</code>\n"
-"Work time is <code>{work_start} - {work_end}</code>\n"
-"Work days are <code>{work_calendar}</code>"
+msgid "🥳 Hooray, all tickets are resolved!"
 msgstr ""
-
-#: src/utils.py:51
-msgid "⚠️ Ticket with this id doesn't exist in the database"
-msgstr ""
-
-#: src/utils.py:59
-msgid "⚠️ User with this @username doesn't exist in the database"
-msgstr ""
-
-#: src/utils.py:67
-msgid "⚠️ User with this id doesn't exist in the database"
-msgstr ""
-
-#: src/utils.py:72
-msgid "⚠️ Target must be a valid ticket id OR @username OR user id"
-msgstr ""
-
-#: src/utils.py:109
-msgid "month"
-msgstr ""
-
-#: src/utils.py:109
-msgid "months"
-msgstr ""
-
-#: src/utils.py:110
-msgid "day"
-msgstr ""
-
-#: src/utils.py:110
-msgid "days"
-msgstr ""
-
-#: src/utils.py:111
-msgid "hour"
-msgstr ""
-
-#: src/utils.py:111
-msgid "hours"
-msgstr ""
-
-#: src/utils.py:112
-msgid "minute"
-msgstr ""
-
-#: src/utils.py:112
-msgid "minutes"
-msgstr ""
-
-#: src/utils.py:113
-msgid "second"
-msgstr ""
-
-#: src/utils.py:113
-msgid "seconds"
-msgstr ""
-
-#: src/utils.py:119
-msgid "long time ago"
-msgstr ""
-
-#: src/utils.py:122
-msgid "just now"
-msgstr ""
-
-#: src/utils.py:178
-msgid "<i>Nothing to show</i>"
-msgstr ""
-
-#: src/utils.py:185
-msgid "monday"
-msgstr ""
-
-#: src/utils.py:186
-msgid "tuesday"
-msgstr ""
-
-#: src/utils.py:187
-msgid "wednesday"
-msgstr ""
-
-#: src/utils.py:188
-msgid "thursday"
-msgstr ""
-
-#: src/utils.py:189
-msgid "friday"
-msgstr ""
-
-#: src/utils.py:190
-msgid "saturday"
-msgstr ""
-
-#: src/utils.py:191
-msgid "sunday"
-msgstr ""
-
-#: src/services/bot.py:24
-msgid "Start command"
-msgstr ""
-
-#: src/services/bot.py:25
-msgid "Create a new support ticket"
-msgstr ""
-
-#: src/services/bot.py:32
-msgid "List of open tickets"
-msgstr ""
-
-#: src/services/bot.py:33
-msgid "Update your pseudonym"
-msgstr ""
-
-#: src/services/bot.py:34
-msgid "Ban the user"
-msgstr ""
-
-#: src/services/bot.py:35
-msgid "Unban the user"
-msgstr ""
-

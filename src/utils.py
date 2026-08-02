@@ -1,13 +1,20 @@
 import logging
+import re
 from datetime import datetime, timedelta
 from typing import List, cast
 from uuid import UUID
 
-from config import AUTHORIZED_GROUP_ID
+from config import (
+    AUTHORIZED_GROUP_ID,
+    BOT_ACTIVE_DAYS,
+    BOT_TIME_ACTIVE,
+    BOT_TIME_ZONE,
+)
 from consts import (
-    LANGUAGE_CODE_TO_EMOJI,
     MAX_SUMMARY_LINE_LENGTH,
     TICKET_AGE_WARNING,
+    TICKET_TAG_LENGTH,
+    TICKET_TAG_PREFIX,
     TicketActions,
     TicketStatus,
     WeekDay,
@@ -19,6 +26,11 @@ from telegram import Update
 
 __logger = logging.getLogger(__name__)
 
+# Matches a ticket tag without its leading '#', e.g. "T3f9a1c04"
+TAG_PATTERN = re.compile(
+    f"{TICKET_TAG_PREFIX}[0-9a-fA-F]{{{TICKET_TAG_LENGTH}}}"
+)
+
 
 async def parse_command_target(update: Update, target: str) -> User:
     """Parse the target(ticket id, username or userid) and return the user"""
@@ -29,6 +41,21 @@ async def parse_command_target(update: Update, target: str) -> User:
         ticket_id = UUID(target)
     except ValueError:
         ticket_id = None
+
+    # check if target is a ticket tag as shown in the group, e.g. #T3f9a1c04
+    tag = target.lstrip("#")
+    if ticket_id is None and TAG_PATTERN.fullmatch(tag):
+        ticket = (
+            SupportTicket.select()
+            .where(SupportTicket.id.startswith(tag[len(TICKET_TAG_PREFIX):]))
+            .first()
+        )
+        if ticket is None:
+            await message.reply_text(
+                _("⚠️ Ticket with this id doesn't exist in the database")
+            )
+            return None
+        return ticket.user
 
     # check if target is an username
     if target.startswith("@"):
@@ -75,11 +102,39 @@ async def parse_command_target(update: Update, target: str) -> User:
     return user
 
 
-def lang_code_to_emoji(lang_code: str | None) -> str:
-    """Converts :obj:`str` containing language code to emoji"""
-    if not lang_code:
-        return "❓"
-    return LANGUAGE_CODE_TO_EMOJI.get(lang_code, "🌐")
+def ticket_tag(ticket: SupportTicket) -> str:
+    """
+    Telegram hashtag identifying the ticket, e.g. ``#T3f9a1c04``.
+
+    Every message the bot posts into the support group carries it, so tapping
+    the tag — or searching for it — brings up the whole conversation. Derived
+    from the ticket's uuid, so it needs no column of its own.
+    """
+    ticket_id = ticket.id
+    if not isinstance(ticket_id, UUID):
+        ticket_id = UUID(str(ticket_id))
+    return f"#{TICKET_TAG_PREFIX}{ticket_id.hex[:TICKET_TAG_LENGTH]}"
+
+
+def is_within_working_hours(moment: datetime | None = None) -> bool:
+    """
+    Checks whether ``moment`` (UTC) falls inside the support working window.
+
+    Used only to decide whether to warn the reader that the answer will take
+    longer — the bot accepts tickets around the clock.
+    """
+    local = (moment or datetime.utcnow()) + timedelta(hours=BOT_TIME_ZONE)
+
+    if WeekDay(local.strftime("%A").lower()) not in BOT_ACTIVE_DAYS:
+        return False
+
+    start, end = BOT_TIME_ACTIVE
+    now = local.time()
+
+    if start <= end:
+        return start <= now <= end
+    # Window wrapping past midnight, e.g. 22:00-06:00
+    return now >= start or now <= end
 
 
 def validate_ticket_query(data: str) -> bool:
@@ -170,7 +225,8 @@ def create_ticket_summary(tickets: List[SupportTicket]) -> str:
         )
 
         ticket_lines.append(
-            f"  •  {status} <a href='{link}'>{first_name}: '{name}'</a>"
+            f"  •  {status} {ticket_tag(ticket)} "
+            f"<a href='{link}'>{first_name}: '{name}'</a>"
             f" — <i>{age_warn}{age_str}</i>\n\n"
         )
 

@@ -38,12 +38,11 @@ BOT_LANGUAGE = os.environ.get("BOT_LANGUAGE", "ru")
 # database connection URI; relative paths are resolved against DATA_DIR so the
 # database always ends up inside the bot's folder
 DB_URI = os.environ.get("DB_URI", "tickets.db")
-# maximum tickets per single user
-USER_OPEN_TICKETS_MAX = int(os.environ.get("USER_OPEN_TICKETS_MAX", "3"))
-# working time
-BOT_TIME_ACTIVE = os.environ.get("BOT_TIME_ACTIVE", "09:00-17:00")
-# timezone of the working time
-BOT_TIME_ZONE = int(os.environ.get("BOT_TIME_ZONE", "+0"))
+# working time — no longer shown to readers, but still used to decide whether
+# to warn them that the answer will have to wait until the team is back
+BOT_TIME_ACTIVE = os.environ.get("BOT_TIME_ACTIVE", "10:00-20:00")
+# timezone of the working time (Moscow by default)
+BOT_TIME_ZONE = int(os.environ.get("BOT_TIME_ZONE", "+3"))
 # working days
 BOT_ACTIVE_DAYS = os.environ.get(
     "BOT_ACTIVE_DAYS",

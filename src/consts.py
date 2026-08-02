@@ -8,47 +8,16 @@ TICKET_AGE_WARNING = 60 * 60 * 24  # day
 
 TICKETS_PER_PAGE = 10
 
+# Every message the bot posts into the support group is prefixed with
+# "#T<8 hex chars of the ticket uuid>". Telegram indexes it as a hashtag, so
+# tapping or searching it pulls up the whole conversation.
+TICKET_TAG_PREFIX = "T"
+TICKET_TAG_LENGTH = 8
+
 LOG_FORMAT = (
     "%(asctime)s | %(levelname)s | "
     "%(name)s::%(funcName)s (line %(lineno)s) | %(message)s"
 )
-
-LANGUAGE_CODE_TO_EMOJI = {
-    "en": "🇺🇸",
-    "ru": "🇷🇺",
-    "ua": "🇺🇦",
-    "de": "🇩🇪",
-    "fr": "🇫🇷",
-    "es": "🇪🇸",
-    "it": "🇮🇹",
-    "pl": "🇵🇱",
-    "nl": "🇳🇱",
-    "tr": "🇹🇷",
-    "pt": "🇵🇹",
-    "sv": "🇸🇪",
-    "no": "🇳🇴",
-    "da": "🇩🇰",
-    "cs": "🇨🇿",
-    "hu": "🇭🇺",
-    "th": "🇹🇭",
-    "id": "🇮🇩",
-    "ro": "🇷🇴",
-    "au": "🇦🇺",
-    "vi": "🇻🇳",
-    "el": "🇬🇷",
-    "bg": "🇧🇬",
-    "he": "🇮🇱",
-    "ar": "🇦🇪",
-    "hi": "🇮🇳",
-    "ko": "🇰🇷",
-    "mx": "🇲🇽",
-    "cn": "🇨🇳",
-    "jp": "🇯🇵",
-    "hk": "🇭🇰",
-    "cr": "🇨🇷",
-    "tw": "🇹🇼",
-    "my": "🇲🇾",
-}
 
 
 class WeekDay(StrEnum):
@@ -59,11 +28,6 @@ class WeekDay(StrEnum):
     FRIDAY = "friday"
     SATURDAY = "saturday"
     SUNDAY = "sunday"
-
-
-class ConversationState(IntEnum):
-    WAITING_FOR_MESSAGE = 0
-    WAITING_FOR_ADDITIONAL_MESSAGE = 1
 
 
 class TicketStatus(IntEnum):
@@ -80,7 +44,3 @@ class PaginationActions(StrEnum):
     PREVIOUS = "PREV_PAGE"
     REFRESH = "UPD_PAGE"
     NEXT = "NEXT_PAGE"
-
-
-class TicketCreationActions(StrEnum):
-    CANCEL = "CANCEL"

@@ -6,6 +6,7 @@ from config import (
 )
 from consts import TicketStatus
 from peewee import (
+    BooleanField,
     DateTimeField,
     ForeignKeyField,
     IntegerField,
@@ -91,6 +92,32 @@ class SupportTicket(BaseModel):
 
     class Meta:
         table_name = "support_tickets"
+
+
+class TicketMessage(BaseModel):
+    """
+    One relayed message, in either direction, tied to its ticket.
+
+    A ticket is a running conversation, so a single pair of message ids on the
+    ticket is not enough: staff may reply to any message in the thread, and the
+    reader may reply to any answer. This table is the lookup that turns a
+    replied-to message back into a ticket, and into the message to answer on
+    the other side.
+    """
+
+    id = UUIDField(primary_key=True, default=uuid4)
+    ticket = ForeignKeyField(SupportTicket, backref="messages")
+    # id of the message in the support group
+    support_message_id = IntegerField(index=True)
+    # id of the message in the reader's private chat
+    private_message_id = IntegerField(index=True, null=True)
+    # True when the message originated from support, False when from the reader
+    from_staff = BooleanField(default=False)
+
+    created_at = DateTimeField(default=datetime.utcnow)
+
+    class Meta:
+        table_name = "ticket_messages"
 
 
 class UserBan(BaseModel):
