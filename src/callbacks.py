@@ -378,7 +378,8 @@ async def preprocess_update(
         )
         return
 
- chat = update.effective_chat
+
+    chat = update.effective_chat
     if chat is not None and chat.id == AUTHORIZED_GROUP_ID:
         return
 
