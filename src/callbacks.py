@@ -368,17 +368,22 @@ async def preprocess_update(
 
     try:
         db_user = User.get(User.id == user.id)
-
-        if services.user.is_banned(db_user):
-            raise ApplicationHandlerStop
     except DoesNotExist:
-        db_user = User.create(
+        User.create(
             id=user.id,
             first_name=user.first_name,
             last_name=user.last_name,
             username=user.username,
             language_code=user.language_code,
         )
+        return
+
+ chat = update.effective_chat
+    if chat is not None and chat.id == AUTHORIZED_GROUP_ID:
+        return
+
+    if services.user.is_banned(db_user):
+        raise ApplicationHandlerStop
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
