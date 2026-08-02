@@ -1,38 +1,118 @@
-# Ticketgram
-A simple yet powerful support bot that allows you to receive and respond to user feedback.
+# Ticketgram — AudioRanobe support bot
+A Telegram support bot for AudioRanobe. Readers write to it in a private chat,
+the support team answers from one shared supergroup, and each exchange is
+tracked as a ticket.
 
-## Gallery
-|User-side|Support-side|
-|-|-|
-|![](/screenshots/user_side.png)|![](/screenshots/support_side.png)|
+Based on [ticketgram](https://github.com/mikurei/ticketgram) by mikurei (GPLv3).
+What this fork changes:
 
-See more at [Screenshots](screenshots/SCREENSHOTS.md)
+- Russian out of the box, and the catalog is actually loaded (upstream resolved
+  the locale directory relative to the working directory, so in the container it
+  silently fell back to English)
+- SQLite lives in `ticketgram/data/` next to the code — no named Docker volume
+- Prometheus instrumentation removed
+- **One open ticket per reader**, and every message they send joins it until
+  support closes it — instead of a `/ticket` conversation that produced a
+  separate ticket per question
+- **Any message type** relayed in both directions: photos, documents, voice,
+  video notes, stickers
+- Every relayed message tagged with the ticket's hashtag
+- Working hours are no longer displayed to readers
 
 # Features
-- Message-based (question-answer)
+- One running conversation per reader — no juggling several tickets at once
+- Any message type relayed both ways: photos, files, voice, video notes, stickers
+- Every relayed message tagged with the ticket's hashtag, so the whole thread is one search away
 - Anonymous (pseudonym system)
 - Configurable
 - Dockerized
-- Internationalization support
-- Access control & usage limitting
-- Monitoring support (Prometheus)
+- Russian out of the box (`ru`), English available via `BOT_LANGUAGE=en`
+- Access control
+
+# How a ticket works
+1. A reader writes to the bot. Their **first message opens a ticket** and the
+   bot confirms it with the ticket's tag, e.g. `#T3f9a1c04`. If it is outside
+   the working window, the confirmation also says support will answer once
+   they are back — no clock or schedule is shown to the reader.
+2. **Every message after that joins the same ticket.** There is no command to
+   run and no way to open a second one in parallel; whatever they send lands
+   in the open ticket until support closes it.
+3. In the support group each relayed message is posted under a header of the
+   form `#T3f9a1c04 | <reader>`. Tapping the tag — or searching it — brings up
+   the whole conversation. The tag also works as a target for `/ban` and
+   `/unban`, with or without the leading `#`.
+4. Staff answer by **replying** to any of the bot's messages in that thread.
+   The answer is delivered to the reader as a reply to the message it
+   addresses, signed with the staff member's pseudonym. Replying does *not*
+   close the ticket.
+5. If the reader replies to an answer, the bot posts their message into the
+   group **as a reply to that staff message**, so the back-and-forth keeps its
+   shape on both sides.
+6. **CLOSE ✅** ends the ticket and tells the reader so; their next message
+   opens a fresh one. **SPAM 🗑️** bans the reader and deletes the ticket's
+   messages from the group.
+
+Stickers, video notes and other media Telegram will not attach a caption to are
+posted as a tagged header with the media immediately below it, since there is
+no way to put text on the media message itself.
+
+## Gallery
+
+|User-side|Support-side|
+|-|-|
+|![](screenshots/user_side.png)|![](screenshots/support_side.png)|
+
+See more at [Screenshots](screenshots/SCREENSHOTS.md)
 
 # Uses
 - `Python 3.11`
 - `python-telegram-bot` Telegram Bot HTTP API wrapper (that you can't refuse)
 - `peewee` as an ORM
-- `babel` for localization
-- `prometheus-client` for instrumentation & serving the `/metrics` endpoint
-- `SQLite` as a database
+- `babel` for localization (build-time only — the bot reads the compiled `.mo`)
+- `SQLite` as a database, stored in `ticketgram/data/`
+
+# Layout
+```
+ticketgram/
+|  data/                  | SQLite database (bind-mounted in Docker)
+|  src/
+|  |  bot.py              | Entry point, handler wiring
+|  |  callbacks.py        | Handlers for both sides of the conversation
+|  |  config.py           | Environment variables, path resolution
+|  |  models.py           | peewee tables
+|  |  templates.py        | Reader-facing message templates
+|  |  utils.py            | Ticket tags, working hours, summaries
+|  |  services/
+|  |  |  relay.py         | Copies messages between the two chats
+|  |  |  ticket.py        | Ticket lifecycle + message mapping
+|  |  |  user.py          | Bans
+|  |  |  bot.py           | Startup checks, command menu
+|  |  locales/            | Message catalog
+```
+
+## Data model
+|Table|Holds|
+|-|-|
+|`users`|Everyone who has ever contacted the bot|
+|`employees`|Staff pseudonyms|
+|`support_tickets`|One row per ticket; `status` is what "open" means|
+|`ticket_messages`|Both message ids of every relayed message, in either direction|
+
+`ticket_messages` is what makes replies routable: a reply in the group is
+matched by `support_message_id` to find the ticket, and a reply in the private
+chat is matched by `private_message_id` to find the staff message to answer
+under. It is created automatically on startup, so an existing database picks it
+up with no migration — but tickets opened before this change have no rows in it
+and replies to them will not route. Close those out.
 
 # Commands
 Client-side:
 - `/start` Welcome message
-- `/ticket` Create a new ticket
+- `/ticket` Explains how to reach support — a ticket is opened by simply writing, not by this command
 
 Support-side:
 - `/open` View open tickets
-- `/ban` Ban the user
+- `/ban` Ban the user (accepts `#T3f9a1c04`, `@username` or a user id)
 - `/unban` Unban the user
 - `/pseudonym` Set pseudonym
 
@@ -54,9 +134,9 @@ Support-side:
 [1] - Learn more about supergroup triggers here: https://stackoverflow.com/a/62291433
 
 # Installation
->⚠️ Requires Python 3.11 or above
-
-First of all, clone the repository using the `git clone` command and `cd` into the `ticketgram` directory.
+> ⚠️ `pyproject.toml` pins `python = "~3.11"` and `requirements.txt` carries
+> hashes scoped to 3.11, so `pip install -r requirements.txt` refuses to run on
+> 3.12+. Docker uses `python:3.11-slim` and is unaffected.
 
 ## Using Poetry (recommended)
 ```bash
@@ -70,73 +150,49 @@ pip install -r requirements.txt
 ```
 
 # Launch
+Copy `src/.env_example` to `src/.env` and fill in `TELEGRAM_TOKEN` and
+`AUTHORIZED_GROUP_ID`, then:
+
 ```bash
-# dont forget about environment variables
-# Powershell syntax
-$env:KEY="VALUE"
-# Bash syntax
-export KEY=VALUE
-
-...
-
 python src/bot.py
 ```
 
+Environment variables set in the shell take precedence over `src/.env`. The bot
+resolves its own directory from `config.py`, so it can be started from anywhere.
+
 # Deploy using Docker
-You can pull the latest image from Docker Hub:
 ```bash
-docker pull mikurei/ticketgram:latest
+docker compose up -d --build
 ```
-Head to the [build section](#build) if you want to build the image by yourself.
 
-## Build
+`docker-compose.yml` bind-mounts `./data` into the container, so the SQLite
+database stays in `ticketgram/data/tickets.db` on the host — no named volumes to
+hunt down when you want to back it up or inspect it.
+
+Plain `docker run` equivalent:
 ```bash
-cd ticketgram
-docker build -t ticketgram .
+docker run -d --env-file ./src/.env -v "$(pwd)/data:/app/data" ticketgram
 ```
-
-## Deploy
-Replace `YOUR_TOKEN` with a valid Telegram bot token and `GROUP_CHAT_ID` with the chat id of the group where the bot will operate.
-
-```
-docker run -d \
-   -e TELEGRAM_TOKEN="YOUR_TOKEN" \
-   -e AUTHORIZED_GROUP_ID="GROUP_CHAT_ID" \
-   -e DB_URI="/app/db/sqlite.db" \
-   --mount "type=volume,src=ticketgram_db,target=/app/db/" \
-   ticketgram
-```
-> ℹ️ You can specify other environment variables here using `-e KEY="VALUE"` syntax to configure runtime of the bot.
 
 # Configuration
-Bot is configured using the `Environment Variables`.
+Bot is configured using the `Environment Variables` (or `src/.env`).
 
-List of available env vars
 |Name|Description|
 |-|-|
 |TELEGRAM_TOKEN|**Required** bot token to access the HTTP Bot API|
 |AUTHORIZED_GROUP_ID|**Required** group in which the bot operates|
-|BOT_LANGUAGE|*Optional* Language of the bot's messages. Defaults to `"en"`|
-|DB_URI|*Optional* SQLite connection URI. Defaults to `"sqlite.db"`|
-|USER_OPEN_TICKETS_MAX|*Optional* Maximum amount of open tickets per user. Defaults to `"3"`|
-|BOT_TIME_ACTIVE|*Optional* Support opening hours which are displayed in the welcome message. Defaults to `"09:00-17:00"`|
-|BOT_TIME_ZONE|*Optional* Timezone of the support. Defaults to `"+0"`|
-|BOT_ACTIVE_DAYS|*Optional* Working days of the support. Defaults to `"monday tuesday wednesday thursday friday saturday sunday"`|
-|PROMETHEUS_ENABLED|*Optional* Enables the Prometheus metrics exporter. Defaults to `False`|
-|PROMETHEUS_PORT|*Optional* Port on which the bot serves the `/metrics` endpoint. Defaults to `8000`|
+|BOT_LANGUAGE|*Optional* Language of the bot's messages. Defaults to `"ru"`|
+|DB_URI|*Optional* SQLite path. Relative paths are resolved inside `ticketgram/data/`. Defaults to `"tickets.db"`|
+|BOT_TIME_ACTIVE|*Optional* Working hours. Never shown to readers — they only decide whether a new ticket gets the "we'll answer once we're back" notice. Defaults to `"10:00-20:00"`|
+|BOT_TIME_ZONE|*Optional* Timezone the working hours are given in. Defaults to `"+3"` (Moscow)|
+|BOT_ACTIVE_DAYS|*Optional* Working days, same purpose as `BOT_TIME_ACTIVE`. Defaults to `"monday tuesday wednesday thursday friday saturday sunday"`|
 
-To change the welcome and support reply messages, review the `templates.py` module.
+`USER_OPEN_TICKETS_MAX` and `PROMETHEUS_ENABLED` / `PROMETHEUS_PORT` are gone.
+They are ignored if still present in your `.env`.
 
-# Monitoring the bot
-Ticketgram provides an optional feature that allows you to export metrics to **Prometheus**. To enable it, set the `PROMETHEUS_ENABLED` to `1` and provide a port using `PROMETHEUS_PORT`.
-
-You will need a configured [Prometheus](https://prometheus.io/) server for pulling metrics from the bot. You can use the awesome [Grafana](https://grafana.com/) for visualizaiton.
-
-Currently, ticketgram provides two metrics:
-- `ticketgram_callbacks_total{func_name}`
-- `ticketgram_callbacks_duration_seconds{func_name}`
-
-To check if the exporter works, open `http://HOST:PROMETHEUS_PORT` in your browser, for example http://localhost:8000
+To change the welcome and support reply messages, review the `templates.py`
+module — and remember that the Russian wording lives in the catalog, not in
+`templates.py` (see [Localization](#localization)).
 
 # Localization
 Project uses [GNU gettext](https://docs.python.org/3/library/gettext.html) and [Babel](https://babel.pocoo.org/en/latest/index.html) utilities for internationalization.
@@ -149,6 +205,20 @@ locales/                | Message catalog
 |  base.pot             | Template translation file
 ```
 
+The strings in the Python source are the English originals and double as
+lookup keys; `ru_RU/LC_MESSAGES/base.po` holds the Russian the bot actually
+sends. **Editing a string in the source changes the key**, so the matching
+`msgid` in `base.po` (and `base.pot`) has to be updated and the catalog
+recompiled, otherwise that message silently falls back to English.
+
+After touching any `_("...")` string:
+```bash
+pybabel extract -o src/locales/base.pot src/
+pybabel update -i src/locales/base.pot -d src/locales -D base
+# fill in the new msgstr values in src/locales/ru_RU/LC_MESSAGES/base.po
+pybabel compile -d src/locales -D base
+```
+
 ## Adding a new language
 1. Create a new language directory under the `locales/`, for example `ja_JP/`
 2. Create `LC_MESSAGES/` in new language directory
@@ -159,6 +229,4 @@ locales/                | Message catalog
 5. Compile the `base.po` to `base.mo` either using `pybabel compile` or `msgfmt` (Linux/WSL only)
 
 ___
-*I'd appreciate it if you'd leave a **star ⭐** and **fork the repo**. Thanks!*
-
-*Created by [mikurei](https://github.com/mikurei) 2023*
+*Upstream project by [mikurei](https://github.com/mikurei) 2023*
